@@ -107,8 +107,8 @@ module.exports.createTopResultsJSON = function(yelpResults, distance) {
     }
   }
 
-  // Limits to 10
-  topResults = sortedResults.slice(0, 10);
+  // Sends 30 so that client can filter them as desired for its top 10
+  topResults = sortedResults.slice(0, 30);
 
   // start the evenSpread algorithm to create a new array of results, which will be combined later with the topResults
   evenSpreadResults[0] = allBusinesses[0]; // push the starting point result to the array
