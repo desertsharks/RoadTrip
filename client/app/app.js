@@ -1,5 +1,4 @@
 angular.module('app', ['autofill-directive', 'ngRoute', 'app.service'])
-
 .controller('mapCtrl', ['$scope', '$element', 'Utility', function($scope, $element, Utility) {
   // Initializes the user input option selector
   $scope.optionSelections = [
@@ -30,12 +29,10 @@ angular.module('app', ['autofill-directive', 'ngRoute', 'app.service'])
   // Takes the TopTop array and calculates cumulative distance per location
   // Caches result so the refresh function does not re-query to save API time
   $scope.cumulativeDistance = function(){
-  //   console.log("topTen: ", $scope.topTen);
-  //   for (var i = 0; i < $scope.topTen.length; i++){
-  //     console.log("Cumulative Distance: ",  i, $scope.topTen);
-  //   }
-
-
+    // console.log("topTen: ", $scope.topTen);
+    // for (var i = 0; i < $scope.topTen.length; i++){
+    //   console.log("Cumulative Distance: ",  i, $scope.topTen);
+    // }
   };
 
   $scope.remove = function($index) {
@@ -47,11 +44,9 @@ angular.module('app', ['autofill-directive', 'ngRoute', 'app.service'])
   };
 
   $scope.appendWarningMsg = function(isInvalid) {
-
     // Invalid message template
     var pInvalid = angular.element("<p id='warningMsg'/>");
     pInvalid.text("Please choose a continental location and resubmit");
-
     // Valid message template
     var pValid = angular.element("<p id='warningMsg'/>");
     pValid.text("");
@@ -64,15 +59,13 @@ angular.module('app', ['autofill-directive', 'ngRoute', 'app.service'])
     }
   };
 
-
-  //Queries Google for directions services and generates map
+  // Queries Google for directions services and generates map
   $scope.calcRoute = function (start, end) {
       console.log("Calculating Route...");
 
       // New directionsService object to interact with Google maps API
       var directionsService = new google.maps.DirectionsService(start,end);
-
-      // clear markers whenever new search
+      // Clear markers whenever new search
       for (var i = 0; i < markerArraySpread.length; i++) {
         markerArraySpread[i].setMap(null);
       }
@@ -83,21 +76,18 @@ angular.module('app', ['autofill-directive', 'ngRoute', 'app.service'])
       // Creates object to send to Google to generate directions, sub-route
       var request = function(start, end){
         return {
-        origin: start || $scope.location.start,
-        destination: end || $scope.location.end,
-        travelMode: google.maps.TravelMode.DRIVING};
-      };
+          origin: start || $scope.location.start,
+          destination: end || $scope.location.end,
+          travelMode: google.maps.TravelMode.DRIVING};
+        };
 
         directionsService.route(request(), function(response, status) {
-
-        // successfully get the direction based on locations
+        // Successfully get the direction based on locations
         if (status === google.maps.DirectionsStatus.OK) {
-
           $scope.geoCodeNotSuccessful=false;
 
-          //Updates the map on index.html
+          // Updates the map on index.html
           directionsDisplay.setDirections(response);
-
           // Data to be sent to backend
           var mapData = {
             // Use distance.value/1609.34 because distance.text is in mi for USA and in km elsewhere
@@ -128,11 +118,11 @@ angular.module('app', ['autofill-directive', 'ngRoute', 'app.service'])
           .then(function(res){
             var color;
             switch ($scope.currentOption) {
-              case "": color = "white"; break;
+              case "": color = "blue"; break;
               case "food": color = "orange"; break;
               case "nightlife": color = "black"; break;
               case "shopping": color = "yellow"; break;
-              case "medical": color = "blue"; break;
+              case "medical": color = "violet"; break;
               case "gas": color = "red"; break;
               case "active, parks": color = "green"; break;
               case "pets": color = "brown"; break;
@@ -142,13 +132,10 @@ angular.module('app', ['autofill-directive', 'ngRoute', 'app.service'])
             Utility.placemarkers(res.data.results, {size: 'sm', color: color});
             Utility.placemarkers(res.data.topTen.slice(0, 10), {size: 'lg', color: color}, res.data.results.length);
             $scope.topTen = res.data.topTen;
-            console.log("CB topTen: ", $scope.topTen);
           });
         } else {
-
           // Sets the geoCodeNotSuccessful to true
           $scope.geoCodeNotSuccessful = true;
-
           // Appends the warning message to main.html
           $scope.appendWarningMsg($scope.geoCodeNotSuccessful);
         }
@@ -158,14 +145,11 @@ angular.module('app', ['autofill-directive', 'ngRoute', 'app.service'])
 
   // Runs when a user hits the submit button
   $scope.submit = function() {
-
     var startGeo, endGeo;
-
     $scope.geoCodeNotSuccessful = false;
     $element.find("main-area").empty();
-
+    delete $scope.topTen;
     $scope.calcRoute($scope.location.start, $scope.location.end);
-
     $scope.cumulativeDistance();
-    };
+  };
 }]);
