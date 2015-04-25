@@ -46,6 +46,10 @@ html,body,div,span,applet,object,iframe,a,abbr,acronym,address,big,cite,code,del
   padding-left: 100px;
 }
 
+#distance {
+  font-weight: 700;
+}
+
 
 #journey {
   text-align: center;
