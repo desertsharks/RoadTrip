@@ -43,7 +43,11 @@ html,body,div,span,applet,object,iframe,a,abbr,acronym,address,big,cite,code,del
 }
 
 #stars {
-  padding-left: 100px;
+  margin: 0 auto;
+}
+
+#distance {
+  font-weight: 700;
 }
 
 
@@ -126,7 +130,7 @@ table {
 
 .info {
   /*visibility: hidden;*/
-  display: none;
+  display: none; 
 }
 
 #topTenList:hover .info {
