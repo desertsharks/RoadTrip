@@ -1,10 +1,13 @@
 var yelp = require('./yelp');
-var key = require('../api/api_key');
+var key;
+try {
+   key = require('../api/api_key');
+} catch(e) {}
 var coordHelpers = require('./coordinateHelpers');
 
 // Creates Yelp client using Oauth
 var yelpClient = yelp.createClient({
-  consumer_key: process.env.KEY || key.consumer_key,
+  consumer_key: process.env.CONSUMER_KEY || key.consumer_key,
   consumer_secret: process.env.CONSUMER_SECRET || key.consumer_secret,
   token: process.env.TOKEN || key.token,
   token_secret: process.env.TOKEN_SECRET || key.token_secret,

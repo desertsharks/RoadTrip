@@ -76,11 +76,11 @@ angular.module('app', ['ngFx', 'autofill-directive', 'ngRoute', 'app.service'])
 
   $scope.selectColor = function(currentOption) {
     switch (currentOption) {
-      case "": return "white";
+      case "": return "blue";
       case "food": return "orange";
       case "nightlife": return "black";
       case "shopping": return "yellow";
-      case "medical": return "blue";
+      case "medical": return "violet";
       case "gas": return "red";
       case "active, parks": return "green";
       case "pets": return "brown";
