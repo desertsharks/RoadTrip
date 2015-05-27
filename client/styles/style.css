@@ -6,6 +6,50 @@ html,body,div,span,applet,object,iframe,a,abbr,acronym,address,big,cite,code,del
   float: center;
   padding: 15px 0 15px 0;
 }
+/*************************************/
+/*Yelp Card Stylings!*/
+/*************************************/
+
+#topTen {
+  vertical-align: middle;
+  text-align: center;
+}
+
+#name {
+  font-family: 'Rancho', helvetica, arial;
+  font-size:1.5em;
+  padding-bottom:10px;
+}
+#address {
+  font-family: 'Rancho', helvetica, arial;
+  font-size:1em;
+  padding-bottom:10px;
+}
+
+#thumbnail {
+  margin-top: 5px;
+  border-radius: 10px;
+  float: left;
+  padding: 5px;
+}
+
+#removeButton img {
+  float: right;
+  height: 30px;
+  width: 30px;
+  margin-top: -81px;
+  cursor: pointer;
+  margin-right: 15px;
+}
+
+#stars {
+  margin: 0 auto;
+}
+
+#distance {
+  font-weight: 700;
+}
+
 
 #journey {
   text-align: center;
@@ -73,8 +117,27 @@ table {
 }
 
 #topTenList {
-  border: 1px solid #999999;;
+  border: 1px solid #999999;
+  height: 50px;
+  overflow: hidden;
 }
+#topTenList:hover {
+  border: 1px solid #999999;
+  height: 120px;
+  overflow: hidden;
+/*  box-shadow: 10px 10px 10px grey;
+*/}
+
+.info {
+  /*visibility: hidden;*/
+  display: none; 
+}
+
+#topTenList:hover .info {
+  /*visibility: visible;*/
+  display: block;
+ }
+
 .snippet {
   display: block;
   width: 100%;
@@ -92,4 +155,10 @@ table {
   font-size: 2.0em;
   font-family: 'Rancho', helvetica, arial;
   color: red;
+}
+
+p {
+  font-family: 'Rancho', helvetica, arial;
+  font-size: 24px;
+  padding-left: 35px;
 }
