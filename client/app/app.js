@@ -1,7 +1,6 @@
-angular.module('app', ['autofill-directive', 'ngRoute', 'app.service'])
-
-.controller('mapCtrl', ['$scope', '$element', 'Maps', 'Utility', function($scope, $element, Maps, Utility) {
-  //initialize the user input option selector
+angular.module('app', ['ngFx', 'autofill-directive', 'ngRoute', 'app.service'])
+.controller('mapCtrl', ['$scope', '$element', 'Utility', function($scope, $element, Utility) {
+  // Initializes the user input option selector
   $scope.optionSelections = [
     {name: 'Everything', value:""},
     {name: 'Food', value:"food"},
@@ -9,23 +8,65 @@ angular.module('app', ['autofill-directive', 'ngRoute', 'app.service'])
     {name: 'Shopping', value:"shopping"},
     {name: 'Medical', value:"medical"},
     {name: 'Gas', value:"gas"},
+    {name: 'Parks', value: "active, parks"},
     {name: 'Pets', value:"pets"}
   ];
-  //set default option filter to "food"
+
+
+  // Sets default filter to "food"
   $scope.optionFilter = $scope.optionSelections[1].value;
-  //initialize the geoCodeNotSuccessful to be used for determining valid continental destination or not
+
+  // Used for determining valid continental destination or not
   $scope.geoCodeNotSuccessful = false;
 
+  $scope.distance = "";
+  $scope.time = "";
+
+  // Calculates the cumulative distance to each TopTop attraction from origin
+  // Assigns the cumDist property to each TopTen object
+
+  var cumulativeDistance = function(start, end, i){
+
+    var tempRequest = {
+      origin: start,
+      destination: end,
+      travelMode: google.maps.TravelMode.DRIVING
+    };
+
+    var directionsService = new google.maps.DirectionsService();
+    var subRoute = directionsService.route(tempRequest, function(result, status) {
+      if (status == google.maps.DirectionsStatus.OK) {
+        //console.log("Status OK");
+
+        var tempResult = result;
+
+        // Store distance based on location in array for each TopTen
+        $scope.topTen[i].cumDist = tempResult.routes[0].legs[0].distance.text;
+        $scope.$apply();
+        //console.log("TopTen[",i,"] ", $scope.topTen[i].cumDist);
+
+      }
+    });
+  };
+
+
+  $scope.remove = function($index) {
+    $scope.topTen.splice($index, 1);
+    markerArrayTop.splice($index, 1)[0].setMap(null);
+    if ($scope.topTen.length >= 10) {
+      Utility.placemarkers($scope.topTen[9], {size: 'lg', color: $scope.selectColor($scope.currentOption)});
+    }
+  };
+
   $scope.appendWarningMsg = function(isInvalid) {
-    // invalid message template
+    // Invalid message template
     var pInvalid = angular.element("<p id='warningMsg'/>");
     pInvalid.text("Please choose a continental location and resubmit");
-    // valid message template
+    // Valid message template
     var pValid = angular.element("<p id='warningMsg'/>");
     pValid.text("");
-    //check to see if the location entered is invalid
-    //if location is invalid, then append invalid message
-    // else, append a blank message
+
+    // Append invalid string if the input is invalid
     if (isInvalid) {
       $element.find("main-area").append(pInvalid);
     } else {
@@ -33,91 +74,120 @@ angular.module('app', ['autofill-directive', 'ngRoute', 'app.service'])
     }
   };
 
-  $scope.submit = function(city) {
-    $scope.geoCodeNotSuccessful = false;  // every time when submit button is pressed, reset the geoCodeNotSuccessful to false
-    $element.find("main-area").empty();   // clear out the warning messages from previous location input
-    console.log("SCOPE ENTIRE: ", $scope.location);
-    var startGeo, endGeo;
-
-    calcRoute();
-
-    function calcRoute() {
-      // New directionsService object to interact with google maps API
-      var directionsService = new google.maps.DirectionsService();
-      // clear markers whenever new search
-      for (var i = 0; i < markerArray.length; i++) {
-        markerArray[i].setMap(null);
-      }
-
-      // create object to send to Google to generate directions
-      var request = {
-        origin: $scope.location.start,
-        destination: $scope.location.end,
-        travelMode: google.maps.TravelMode.DRIVING
-      };
-
-      //send request to Google Maps Directions API with request object as data
-      directionsService.route(request, function(response, status) {
-        // successfully get the direction based on locations
-        if (status === google.maps.DirectionsStatus.OK) {
-          $scope.geoCodeNotSuccessful=false;
-          //Update the map on index.html
-          directionsDisplay.setDirections(response);
-
-          console.log("DIRECTIONS RESPONSE: ", response);
-          console.log("LENGTH: ", response.routes[0].overview_path.length);
-          console.log("OVERVIEW PATH: ", response.routes[0].overview_path);
-
-          // objects to be sent to backend
-          var sendData = {
-            distance: response.routes[0].legs[0].distance.text,
-            optionFilter: $scope.optionFilter,
-            waypoints: {}
-          };
-
-          //gather all points along route returned by Google in overview_path property
-          //and insert them into waypoints object to send to server
-          for (var j = 0; j < response.routes[0].overview_path.length; j++) {
-            sendData.waypoints[j] = response.routes[0].overview_path[j].lat() + "," + response.routes[0].overview_path[j].lng();
-          }
-
-          console.log("sendData: ", sendData);
-          $scope.appendWarningMsg($scope.geoCodeNotSuccessful); // append the blank (no warning) message to main.html
-
-          // Send all waypoints along route to server
-          Maps.sendPost(sendData)
-          .then(function(res){
-            console.log("PROMISE OBJ: ", res.data.results);
-            // get back recommendations from Yelp and display as markers
-            Utility.placemarkers(res.data.results);
-            $scope.topTen = res.data.topTen;
-            console.log(res.data.results);
-          });
-        } else {
-          //Log the status code on error
-          console.log("Geocode was not successful: " + status);
-          //set the geoCodeNotSuccessful to true
-          $scope.geoCodeNotSuccessful = true;
-          $scope.appendWarningMsg($scope.geoCodeNotSuccessful); // append the warning message to main.html
-        }
-      });
+  $scope.selectColor = function(currentOption) {
+    switch (currentOption) {
+      case "": return "blue";
+      case "food": return "orange";
+      case "nightlife": return "black";
+      case "shopping": return "yellow";
+      case "medical": return "violet";
+      case "gas": return "red";
+      case "active, parks": return "green";
+      case "pets": return "brown";
+      default: return "red";
     }
   };
-}])
-.factory('Maps', ['$http', function($http) {
-  //This function sends a POST to the server at route /csearch with all waypoints along route as data
-  var sendPost = function(routeObject){
-    return $http.post('/search', routeObject)
-      .then(function(response, error){
-        //POST request successfully sent and response code was returned
-        console.log('response: ', response);
-        console.log('error: ', error);
-        return response;
-      });
-    };
 
-  return {
-    sendPost: sendPost
+  // Callback function
+  $scope.overallRouteCalc = function(res){
+    var color = $scope.selectColor($scope.currentOption);
+
+    Utility.placemarkers(res.data.results, {size: 'sm', color: color});
+    Utility.placemarkers(res.data.topTen.slice(0, 10), {size: 'lg', color: color}, res.data.results.length);
+    $scope.topTen = res.data.topTen;
+
+    // Passing a postal code as use of the Lat/Long object rejected by Google API
+    // Use of postal code is a quicker approximation. Works outside of US
+
+    //Loops over all topTen results and assigns their cumulative distance
+    for(var i = 0; i <$scope.topTen.length; i++){
+      cumulativeDistance($scope.location.start, $scope.topTen[i].location.postal_code, i);
+    }
+
+    // console.log("Final topTen objects", $scope.topTen);
   };
 
+  //Queries Google for directions services and generates map
+  $scope.calcRoute = function (start, end, cb) {
+      //console.log("Calculating Route...");
+
+      cb = cb || $scope.overallRouteCalc;
+
+      // New directionsService object to interact with Google maps API
+      var directionsService = new google.maps.DirectionsService(start,end);
+      // Clear markers whenever new search
+      for (var i = 0; i < markerArraySpread.length; i++) {
+        markerArraySpread[i].setMap(null);
+      }
+      for (var j = 0; j < markerArrayTop.length; j++) {
+        markerArrayTop[j].setMap(null);
+      }
+
+      // Creates object to send to Google to generate directions, sub-route
+      var request = function(start, end){
+        return {
+          origin: start || $scope.location.start,
+          destination: end || $scope.location.end,
+          travelMode: google.maps.TravelMode.DRIVING};
+        };
+
+        directionsService.route(request(), function(response, status) {
+        // Successfully get the direction based on locations
+        if (status === google.maps.DirectionsStatus.OK) {
+          $scope.geoCodeNotSuccessful=false;
+
+          // Updates the map on index.html
+          directionsDisplay.setDirections(response);
+          // Data to be sent to backend
+          var mapData = {
+            // Use distance.value/1609.34 because distance.text is in mi for USA and in km elsewhere
+            distance: response.routes[0].legs[0].distance.value/1609.34,
+            optionFilter: $scope.optionFilter,
+            waypoints: []
+          };
+
+          // Save it for drawing map
+          $scope.currentOption = $scope.optionFilter;
+
+          // Gathers all points along route returned by Google in overview_path property
+          // Inserts them into the mapData object
+          for (var j = 0; j < response.routes[0].overview_path.length; j++) {
+            mapData.waypoints[j] = response.routes[0].overview_path[j].lat() + "," + response.routes[0].overview_path[j].lng();
+          }
+
+          $scope.distance = response.routes[0].legs[0].distance.text.replace('mi', 'miles').replace("km", "kilometers");
+          $scope.duration = response.routes[0].legs[0].duration.text;
+
+          // Appends the blank (no warning) message to main.html
+          $scope.appendWarningMsg($scope.geoCodeNotSuccessful);
+
+          // Sends all waypoints along route to server
+          Utility.sendMapData(mapData)
+
+          // Receives Yelp recommendations and displays as markers
+          .then(cb);
+        } else {
+          // Sets the geoCodeNotSuccessful to true
+          $scope.geoCodeNotSuccessful = true;
+          // Appends the warning message to main.html
+          $scope.appendWarningMsg($scope.geoCodeNotSuccessful);
+        }
+      });
+     };
+  // Declaring the top ten arrayu that we can reference later
+  // var topTenArr;
+
+  // var removeSelection = function(index) {
+  //   topTenArr.splice(index, 0);
+  //   return topTenArr;
+  // }
+
+  // Runs when a user hits the submit button
+  $scope.submit = function() {
+    var startGeo, endGeo;
+    $scope.geoCodeNotSuccessful = false;
+    $element.find("main-area").empty();
+    delete $scope.topTen;
+    $scope.calcRoute($scope.location.start, $scope.location.end);
+  };
 }]);
