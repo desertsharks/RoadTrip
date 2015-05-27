@@ -152,7 +152,7 @@ angular.module('app', ['ngFx', 'autofill-directive', 'ngRoute', 'app.service'])
           // Gathers all points along route returned by Google in overview_path property
           // Inserts them into the mapData object
           for (var j = 0; j < response.routes[0].overview_path.length; j++) {
-            mapData.waypoints[j] = response.routes[0].overview_path[j].k + "," + response.routes[0].overview_path[j].D;
+            mapData.waypoints[j] = response.routes[0].overview_path[j].lat() + "," + response.routes[0].overview_path[j].lng();
           }
 
           $scope.distance = response.routes[0].legs[0].distance.text.replace('mi', 'miles').replace("km", "kilometers");
